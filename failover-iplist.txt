@@ -1,0 +1,5 @@
+MY IP
+NEXT FAILOVER NODE IP
+NEXT FAILOVER NODE IP
+AND SO ON AD INFINITUM, the more nodes you have, the more chance for dropped messages there are if they keep failing over like dominoes
+MY IP AGAIN SO if all else fail I go back to my ip
