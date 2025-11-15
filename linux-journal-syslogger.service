@@ -3,6 +3,10 @@ Description=Forward journalctl events to syslogg
 
 [Service]
 ExecStart=/bin/sh -c 'journalctl -f | grep -v "DROPPED-STUFF-BY-NEGATIVE-MATCH" | nc -u #IP Or Hostname# 514'
+# grep -v starterPAK
+# if you use UFW 
+#     grep -Ev "DST=224.0.0.1|CRON|systemd|NetworkManager|snapd|apt|avahi|cups|bluetooth"
+# if you dont use ufw and you're on iptables, you got this
 Restart=always
 RestartSec=30
 
