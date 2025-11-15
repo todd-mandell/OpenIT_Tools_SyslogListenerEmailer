@@ -1,0 +1,15 @@
+[Unit]
+Description=Forward journalctl events to syslogg
+
+[Service]
+ExecStart=/bin/sh -c 'journalctl -f | nc -u your.receiver.host 514'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+###### TO ADD AS A SERVICE #####
+# run this
+# sudo systemctl enable --now linux-journal-syslogger.service
