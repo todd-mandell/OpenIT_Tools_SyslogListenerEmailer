@@ -2,7 +2,7 @@
 Description=Forward journalctl events to syslogg
 
 [Service]
-ExecStart=/bin/sh -c 'journalctl -f | nc -u # IP #Or Hostname # 514'
+ExecStart=/bin/sh -c 'journalctl -f | grep -v "DROPPED-STUFF-BY-NEGATIVE-MATCH" | nc -u #IP Or Hostname# 514'
 Restart=always
 RestartSec=30
 
