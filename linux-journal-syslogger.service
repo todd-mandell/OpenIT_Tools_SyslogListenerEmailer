@@ -1,5 +1,5 @@
 [Unit]
-Description=Forward journalctl events to syslogg
+Description=Forward journalctl events to syslogg Ununtu
 
 [Service]
 ExecStart=/bin/sh -c 'journalctl -f | grep -v "DROPPED-STUFF-BY-NEGATIVE-MATCH" | nc -u #IP Or Hostname# 514'
@@ -30,3 +30,8 @@ WantedBy=multi-user.target
 # run this to make it happen
 # sudo systemctl enable --now linux-journal-syslogger.service
 # to make changes you have to stop it, disable it, probably stop it again, and re-enable it , and stop 
+
+
+##### compat mode for debian ####
+# replace this line as follows
+# ExecStart=/bin/sh -c 'stdbuf -oL journalctl -f | stdbuf -oL grep -Ev "DST=224.0.0.1|CRON|systemd|NetworkManager|snapd|apt|avahi|cups" | socat - UDP:###IP-or-HOST###:514'
