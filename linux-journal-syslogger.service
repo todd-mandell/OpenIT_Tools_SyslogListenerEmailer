@@ -3,10 +3,6 @@ Description=Forward journalctl events to syslogg
 
 [Service]
 ExecStart=/bin/sh -c 'journalctl -f | grep -v "DROPPED-STUFF-BY-NEGATIVE-MATCH" | nc -u #IP Or Hostname# 514'
-# grep -v starterPAK
-# if you use UFW 
-#     grep -Ev "DST=224.0.0.1|CRON|systemd|NetworkManager|snapd|apt|avahi|cups|bluetooth"
-# if you dont use ufw and you're on iptables, you got this
 Restart=always
 RestartSec=30
 
@@ -15,13 +11,23 @@ WantedBy=multi-user.target
 
 
 
+##### Instrukshins ####
+
+# first you have to create the unit file
+# nano /etc/systemd/system/linux-journal-syslogger.service
+# because vim is no
 
 
+
+###### grep -v starterPAK  #######
+# if you use UFW 
+#     grep -Ev "DST=224.0.0.1|CRON|systemd|NetworkManager|snapd|apt|avahi|cups|bluetooth"
+# if you dont use ufw and you're on iptables, you got this
 
 
 
 ###### TO ADD AS A SERVICE #####
-# run this
+# run this to make it happen
 # sudo systemctl enable --now linux-journal-syslogger.service
 
-# to make changes you have to disable it and re-enable it , and stop 
+# to make changes you have to stop it, disable it, probably stop it again, and re-enable it , and stop 
