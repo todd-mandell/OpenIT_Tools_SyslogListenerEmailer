@@ -1,0 +1,1 @@
+0 23 * * * /bin/sh -c 'd=$(date +\%Y-\%m-\%d); gzip -c /var/log/syslog-email-service.log > /var/log/syslog-email-service-$d.gz && : > /var/log/syslog-email-service.log'
