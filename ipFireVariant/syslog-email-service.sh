@@ -1,24 +1,45 @@
 #!/bin/bash
 
 ### CONFIG ###
-MAILTO="TO"
-MAILFROM="FROM"
+MAILTO="you@example.com"
+MAILFROM="syslog@yourdomain.com"
+SMTP_SERVER="smtp.yourprovider.com"
+SMTP_PORT="587"
+SMTP_USER="YOUR_SMTP_USERNAME"
+SMTP_PASS="YOUR_SMTP_PASSWORD"
 HOSTNAME=$(hostname)
 LOGFILE="/var/log/syslog-email-service.log"
 
-### EMAIL FUNCTION ###
-send_mail() {
-    local msg="$1"
+### PURE BASH SMTP (AUTH LOGIN + STARTTLS) ###
+smtp_send() {
+    local subject="$1"
+    local body="$2"
+
     {
+        echo "EHLO ${HOSTNAME}"
+        echo "STARTTLS"
+        sleep 1
+        echo "AUTH LOGIN"
+        echo -n "${SMTP_USER}" | base64
+        echo -n "${SMTP_PASS}" | base64
+        echo "MAIL FROM:<${MAILFROM}>"
+        echo "RCPT TO:<${MAILTO}>"
+        echo "DATA"
+        echo "Subject: ${subject}"
         echo "From: ${MAILFROM}"
         echo "To: ${MAILTO}"
-        echo "Subject: Syslog (${HOSTNAME})"
-        echo "Content-Type: text/plain"
         echo
-        echo "$msg"
-    } | /usr/sbin/sendmail -t
+        echo "${body}"
+        echo "."
+        echo "QUIT"
+    } | openssl s_client -quiet -starttls smtp -connect "${SMTP_SERVER}:${SMTP_PORT}" >>"$LOGFILE" 2>&1
+}
 
-    echo "$(date) SENT: $msg" >> "$LOGFILE"
+### WRAPPER FOR SYSLOG MESSAGES ###
+send_mail() {
+    local msg="$1"
+    echo "$(date) SENDING: $msg" >> "$LOGFILE"
+    smtp_send "Syslog (${HOSTNAME})" "$msg"
 }
 
 ### LISTENER FUNCTION ###
