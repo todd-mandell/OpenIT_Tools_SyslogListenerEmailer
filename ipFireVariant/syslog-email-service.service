@@ -1,24 +1,43 @@
 #!/bin/sh
 # chkconfig: 345 95 05
-# description: Syslog Email Forwarder (Pure Bash)
+# description: Syslog Email Forwarder (Pure Bash SMTP)
+
+PIDFILE=/var/run/syslog-email-service.pid
+DAEMON=/usr/local/bin/syslog-email-service.sh
 
 case "$1" in
   start)
     echo "Starting syslog email service..."
-    /usr/local/bin/syslog-email-service.sh &
-    echo $! > /var/run/syslog-email-service.pid
+    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "Already running."
+        exit 0
+    fi
+    $DAEMON &
+    echo $! > "$PIDFILE"
     ;;
   stop)
     echo "Stopping syslog email service..."
-    kill $(cat /var/run/syslog-email-service.pid)
-    rm -f /var/run/syslog-email-service.pid
+    if [ -f "$PIDFILE" ]; then
+        kill "$(cat "$PIDFILE")" 2>/dev/null || true
+        rm -f "$PIDFILE"
+    fi
     ;;
   restart)
     $0 stop
     sleep 1
     $0 start
     ;;
+  status)
+    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "Running (pid $(cat "$PIDFILE"))."
+        exit 0
+    else
+        echo "Not running."
+        exit 1
+    fi
+    ;;
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|restart|status}"
     exit 1
+    ;;
 esac
