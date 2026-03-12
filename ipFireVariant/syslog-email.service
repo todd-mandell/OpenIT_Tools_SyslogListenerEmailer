@@ -1,0 +1,12 @@
+[Unit]
+Description=UDP Syslog Listener with SES Email Forwarding
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/syslog-listener
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
