@@ -17,14 +17,18 @@ handle_line() {
     $SMTP "Syslog Alert: $TS" "$LINE"
 }
 
-# Listener for port 514
-nc -klu $PORT1 | while read LINE; do
-    handle_line "$LINE"
-done &
+# Listener for port 514 in its own subshell
+(
+    nc -klu $PORT1 | while read LINE; do
+        handle_line "$LINE"
+    done
+) &
 
-# Listener for port 162
-nc -klu $PORT2 | while read LINE; do
-    handle_line "$LINE"
-done &
+# Listener for port 162 in its own subshell
+(
+    nc -klu $PORT2 | while read LINE; do
+        handle_line "$LINE"
+    done
+) &
 
 wait
