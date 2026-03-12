@@ -10,25 +10,25 @@ echo "$(date) Starting syslog listeners on UDP $PORT1 and $PORT2" >> "$LOGFILE"
 
 handle_line() {
     LINE="$1"
-    SRCIP="$2"
     TS=$(date +"%Y-%m-%d %H:%M:%S")
 
-    echo "$TS [$SRCIP] $LINE" >> "$LOGFILE"
+    echo "$TS Received: $LINE" >> "$LOGFILE"
 
-    SUBJECT="Syslog from $SRCIP at $TS"
-    BODY="Source IP: $SRCIP\nMessage: $LINE"
-
-    $SMTP "$SUBJECT" "$BODY"
+    $SMTP "Syslog Alert: $TS" "$LINE"
 }
 
-# Listener for port 514
+# Listener for port 514 in its own subshell
 (
-    socat -u UDP-RECV:$PORT1,fork SYSTEM:'while read LINE; do SRCIP="$SOCAT_PEERADDR"; /home/openitmailer/syslog-listener-helper.sh "$LINE" "$SRCIP"; done'
+    nc -klu $PORT1 | while read LINE; do
+        handle_line "$LINE"
+    done
 ) &
 
-# Listener for port 162
+# Listener for port 162 in its own subshell
 (
-    socat -u UDP-RECV:$PORT2,fork SYSTEM:'while read LINE; do SRCIP="$SOCAT_PEERADDR"; /home/openitmailer/syslog-listener-helper.sh "$LINE" "$SRCIP"; done'
+    nc -klu $PORT2 | while read LINE; do
+        handle_line "$LINE"
+    done
 ) &
 
 wait
