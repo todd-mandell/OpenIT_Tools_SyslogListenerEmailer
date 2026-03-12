@@ -1,2 +1,2 @@
-0 23 * * * /bin/sh -c 'd=$(date +\%Y-\%m-\%d); gzip -c /var/log/syslog-email-service.log > /var/log/syslog-email-service-$d.gz && : > /var/log/syslog-email-service.log'
-0 23 * * * /bin/sh -c 'd=$(date +\%Y-\%m-\%d); gzip -c /var/log/syslog-email-service.log > /var/log/sysmail-$d.gz && : > /var/log/sysmail.log'
+0 23 * * * /bin/sh -c 'd=$(date +\%Y-\%m-\%d); gzip -c /home/openitemailer/syslog-email-service.log > /var/log/syslog-email-service-$d.gz && : > /home/openitemailer/syslog-email-service.log'
+0 23 * * * /bin/sh -c 'd=$(date +\%Y-\%m-\%d); gzip -c /home/openitemailer/sysmail.log > /var/log/sysmail-$d.gz && : > /home/openitemailer/sysmail.log'
