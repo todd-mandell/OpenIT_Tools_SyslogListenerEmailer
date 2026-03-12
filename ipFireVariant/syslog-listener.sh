@@ -1,15 +1,32 @@
 #!/bin/bash
 
-PORT=514
-LOGFILE="/home/openitmailer/syslog-email-service.log"
+LOGFILE=" /home/openitmailer/syslog-email-service.log"
 
-echo "Starting syslog listener on UDP $PORT" >> "$LOGFILE"
+PORT1=514
+PORT2=162
 
-# Create UDP socket listener
-nc -klu $PORT | while read -r LINE; do
+echo "Starting syslog listeners on UDP $PORT1 and $PORT2" >> "$LOGFILE"
+
+handle_line() {
+    local LINE="$1"
+    local TS
     TS=$(date +"%Y-%m-%d %H:%M:%S")
+
     echo "$TS Received: $LINE" >> "$LOGFILE"
 
-    # Send email for each syslog line
-    /home/openitmailer/smtp-send "Syslog Alert: $TS" "$LINE"
-done
+    # Send one email per syslog/trap line
+     /home/openitmailer/smtp-send "Syslog Alert: $TS" "$LINE"
+}
+
+# Listener for port 514
+nc -klu $PORT1 | while read -r LINE; do
+    handle_line "$LINE"
+done &
+
+# Listener for port 162
+nc -klu $PORT2 | while read -r LINE; do
+    handle_line "$LINE"
+done &
+
+# Keep the script alive
+wait
