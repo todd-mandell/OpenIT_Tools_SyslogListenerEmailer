@@ -1,12 +1,59 @@
-[Unit]
-Description=UDP Syslog Listener with SES Email Forwarding
-After=network.target
+#!/bin/sh
+#
+# /home/openitmailer/syslog-email.service
+#
+# chkconfig: 345 85 15
+# description: Syslog listener that forwards messages to SMTP email
 
-[Service]
-Type=simple
-ExecStart=/home/openitmailer/syslog-listener
-Restart=always
-RestartSec=2
+### BEGIN INIT INFO
+# Provides:          syslog-email.service
+# Required-Start:    $network
+# Required-Stop:
+# Default-Start:     3 4 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Syslog to SMTP email forwarder
+### END INIT INFO
 
-[Install]
-WantedBy=multi-user.target
+DAEMON=/home/openitmailer/syslog-listener.sh
+PIDFILE=/var/run/syslog-email-service.pid
+LOGFILE=/home/openitmailer/syslog-email-service.log
+
+start() {
+    echo "Starting syslog-email-service..."
+    if [ -f $PIDFILE ]; then
+        echo "Already running."
+        exit 1
+    fi
+
+    nohup $DAEMON >> $LOGFILE 2>&1 &
+    echo $! > $PIDFILE
+    echo "Started with PID $(cat $PIDFILE)"
+}
+
+stop() {
+    echo "Stopping syslog-email-service..."
+    if [ ! -f $PIDFILE ]; then
+        echo "Not running."
+        exit 1
+    fi
+
+    kill $(cat $PIDFILE)
+    rm -f $PIDFILE
+    echo "Stopped."
+}
+
+status() {
+    if [ -f $PIDFILE ]; then
+        echo "Running with PID $(cat $PIDFILE)"
+    else
+        echo "Not running."
+    fi
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop; sleep 1; start ;;
+    status) status ;;
+    *) echo "Usage: $0 {start|stop|restart|status}" ;;
+esac
