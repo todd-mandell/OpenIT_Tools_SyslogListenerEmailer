@@ -3,67 +3,44 @@
 LOGFILE="/home/openitmailer/syslog-email-service.log"
 SMTP="/home/openitmailer/smtp-send.sh"
 
-BUFFER=""
-LAST_SRCIP=""
-LAST_TIME=0
+log() {
+    TS=$(date +"%Y-%m-%d %H:%M:%S")
+    echo "$TS $*" >> "$LOGFILE"
+}
 
-flush_buffer() {
-    SRC="$1"
-    [ -z "$BUFFER" ] && return
+send_email() {
+    PORT="$1"
+    SRCIP="$2"
+    MSG="$3"
 
     TS=$(date +"%Y-%m-%d %H:%M:%S")
-    SUBJECT="Syslog from $SRC at $TS"
-    BODY=$(printf "Source IP: %s\nMessage:\n%s\n" "$SRC" "$BUFFER")
+    SUBJECT="Syslog datagram from $SRCIP on UDP $PORT at $TS"
+    BODY=$(printf "Source IP: %s\nPort: %s\n\n%s\n" "$SRCIP" "$PORT" "$MSG")
 
-    echo "$TS [$SRC] FLUSHED MESSAGE:" >> "$LOGFILE"
-    printf "%s\n" "$BUFFER" >> "$LOGFILE"
-
-    $SMTP "$SUBJECT" "$BODY"
-
-    BUFFER=""
+    "$SMTP" "$SUBJECT" "$BODY"
 }
 
 listener() {
     PORT="$1"
     ERRFILE="/home/openitmailer/nc${PORT}.err"
 
-    # Run nc in verbose mode, stderr → ERRFILE, stdout → message stream
-    nc -v -klu "$PORT" 2>"$ERRFILE" | while read LINE; do
+    log "Starting nc on UDP $PORT"
 
-        # Extract sender IP from stderr
+    nc -v -klu "$PORT" 2>"$ERRFILE" | while IFS= read -r DATAGRAM; do
+        # Extract sender IP from nc stderr
         SRCIP=$(grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "$ERRFILE" | tail -n1)
         SRCIP=${SRCIP:-unknown}
 
-        # If sender changed, flush previous buffer
-        if [ "$SRCIP" != "$LAST_SRCIP" ] && [ -n "$BUFFER" ]; then
-            flush_buffer "$LAST_SRCIP"
-        fi
+        log "Received datagram from $SRCIP on $PORT"
 
-        LAST_SRCIP="$SRCIP"
-
-        # Append line to buffer
-        if [ -z "$BUFFER" ]; then
-            BUFFER="$LINE"
-        else
-            BUFFER="$BUFFER\n$LINE"
-        fi
-
-        # Reset flush timer
-        LAST_TIME=$(date +%s%3N)
+        # Send entire datagram as one email
+        send_email "$PORT" "$SRCIP" "$DATAGRAM"
     done &
 }
 
-echo "$(date) Starting syslog listeners on UDP 514 and 162" >> "$LOGFILE"
+log "=== syslog-listener.sh starting ==="
 
-# Start listeners
 listener 514
 listener 162
 
-# Timer loop: flush after 200ms of inactivity
-while true; do
-    NOW=$(date +%s%3N)
-    if [ -n "$BUFFER" ] && [ $((NOW - LAST_TIME)) -gt 200 ]; then
-        flush_buffer "$LAST_SRCIP"
-    fi
-    sleep 0.1
-done
+wait
