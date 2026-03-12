@@ -1,0 +1,9 @@
+#!/bin/sh
+
+d=$(date +%Y-%m-%d)
+
+gzip -c /home/openitemailer/syslog-email-service.log > /var/log/syslog-email-service-$d.gz
+: > /home/openitemailer/syslog-email-service.log
+
+gzip -c /home/openitemailer/sysmail.log > /var/log/sysmail-$d.gz
+: > /home/openitemailer/sysmail.log
