@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 SUBJECT="$1"
 BODY="$2"
@@ -11,19 +11,19 @@ SMTP_PASS="SMTPPASSWORD"
 FROM="FROMADDRESS"
 TO="TOADDRESS"
 
-{
-echo "EHLO ipfire"
-echo "AUTH LOGIN"
-echo -n "$SMTP_USER" | base64
-echo -n "$SMTP_PASS" | base64
-echo "MAIL FROM:<$FROM>"
-echo "RCPT TO:<$TO>"
-echo "DATA"
-echo "From: $FROM"
-echo "To: $TO"
-echo "Subject: $SUBJECT"
-echo ""
-echo "$BODY"
-echo "."
-echo "QUIT"
-} | openssl s_client -quiet -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT}
+openssl s_client -starttls smtp -crlf -connect ${SMTP_SERVER}:${SMTP_PORT} <<EOF
+EHLO ipfire
+AUTH LOGIN
+$(printf '%s' "$SMTP_USER" | base64)
+$(printf '%s' "$SMTP_PASS" | base64)
+MAIL FROM:<$FROM>
+RCPT TO:<$TO>
+DATA
+From: $FROM
+To: $TO
+Subject: $SUBJECT
+
+$BODY
+.
+QUIT
+EOF
