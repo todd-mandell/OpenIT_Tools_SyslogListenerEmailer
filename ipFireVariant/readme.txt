@@ -2,7 +2,13 @@
 
 chmod 700 the bash sh files
 
-systemctl daemon-reload
-systemctl enable --now syslog-listener.service
+chmod 755 /etc/init.d/syslog-email.service
+
+chkconfig --add syslog-email.service
+chkconfig syslog-email-service on
+
+start it----
+/etc/init.d/syslog-email.service start
+
 
 
