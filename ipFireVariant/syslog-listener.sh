@@ -14,7 +14,7 @@ send_email() {
     MSG="$3"
 
     TS=$(date +"%Y-%m-%d %H:%M:%S")
-    SUBJECT="Syslog datagram from $SRCIP on UDP $PORT at $TS"
+    SUBJECT="Syslog from $SRCIP at $TS"
     BODY=$(printf "Source IP: %s\nPort: %s\n\n%s\n" "$SRCIP" "$PORT" "$MSG")
 
     "$SMTP" "$SUBJECT" "$BODY"
