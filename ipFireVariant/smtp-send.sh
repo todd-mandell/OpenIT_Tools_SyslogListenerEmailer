@@ -26,4 +26,4 @@ echo ""
 echo "$BODY"
 echo "."
 echo "QUIT"
-} | openssl s_client -quiet -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} >> /var/log/sysmail.log 2>&1
+} | openssl s_client -quiet -starttls smtp -connect ${SMTP_SERVER}:${SMTP_PORT} >> /home/openitmailer/sysmail.log 2>&1
