@@ -2,3 +2,7 @@
 
 chmod 700 the bash sh files
 
+systemctl daemon-reload
+systemctl enable --now syslog-listener.service
+
+
