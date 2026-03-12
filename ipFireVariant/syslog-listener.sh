@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PORT=514
-LOGFILE="/var/log/syslog-email-service.log"
+LOGFILE="/home/openitmailer/syslog-email-service.log"
 
 echo "Starting syslog listener on UDP $PORT" >> "$LOGFILE"
 
@@ -11,5 +11,5 @@ nc -klu $PORT | while read -r LINE; do
     echo "$TS Received: $LINE" >> "$LOGFILE"
 
     # Send email for each syslog line
-    /usr/local/bin/smtp-send "Syslog Alert: $TS" "$LINE"
+    /home/openitmailer/smtp-send "Syslog Alert: $TS" "$LINE"
 done
